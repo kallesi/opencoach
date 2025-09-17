@@ -6,6 +6,8 @@ interface ChessGameProps {
     onGameEnd?: (result: string) => void;
 }
 
+type Square = 'a8' | 'b8' | 'c8' | 'd8' | 'e8' | 'f8' | 'g8' | 'h8' | 'a7' | 'b7' | 'c7' | 'd7' | 'e7' | 'f7' | 'g7' | 'h7' | 'a6' | 'b6' | 'c6' | 'd6' | 'e6' | 'f6' | 'g6' | 'h6' | 'a5' | 'b5' | 'c5' | 'd5' | 'e5' | 'f5' | 'g5' | 'h5' | 'a4' | 'b4' | 'c4' | 'd4' | 'e4' | 'f4' | 'g4' | 'h4' | 'a3' | 'b3' | 'c3' | 'd3' | 'e3' | 'f3' | 'g3' | 'h3' | 'a2' | 'b2' | 'c2' | 'd2' | 'e2' | 'f2' | 'g2' | 'h2' | 'a1' | 'b1' | 'c1' | 'd1' | 'e1' | 'f1' | 'g1' | 'h1';
+
 const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     const chessGameRef = useRef(new Chess());
 
@@ -51,7 +53,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     const getMoveOptions = (square: string) => {
         // Get the moves for the square
         const moves = chessGameRef.current.moves({
-            square: square as any,
+            square: square as Square,
             verbose: true
         });
 
@@ -67,8 +69,8 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
         // Loop through the moves and set the option squares
         for (const move of moves) {
             newSquares[move.to] = {
-                background: chessGameRef.current.get(move.to as any) &&
-                    chessGameRef.current.get(move.to as any)?.color !== chessGameRef.current.get(square as any)?.color
+                background: chessGameRef.current.get(move.to as Square) &&
+                    chessGameRef.current.get(move.to as Square)?.color !== chessGameRef.current.get(square as Square)?.color
                     ? 'radial-gradient(circle, rgba(0,0,0,.1) 85%, transparent 85%)' // larger circle for capturing
                     : 'radial-gradient(circle, rgba(0,0,0,.1) 25%, transparent 25%)', // smaller circle for moving
                 borderRadius: '50%'
@@ -88,8 +90,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     };
 
     // Handle square click
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onSquareClick = (args: any) => {
+    const onSquareClick = (args: { piece: { pieceType: string } | null; square: string; }) => {
         // Piece clicked to move
         if (!moveFrom && args.piece) {
             // Get the move options for the square
@@ -106,10 +107,10 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
 
         // Square clicked to move to, check if valid move
         const moves = chessGameRef.current.moves({
-            square: moveFrom as any,
+            square: moveFrom as Square,
             verbose: true
         });
-        const foundMove = moves.find((m: any) => m.from === moveFrom && m.to === args.square);
+        const foundMove = moves.find((m) => m.from === moveFrom && m.to === args.square);
 
         // Not a valid move
         if (!foundMove) {
@@ -259,10 +260,11 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     };
 
     // Handle the piece drag
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const onPieceDragBegin = (args: any) => {
+    const onPieceDragBegin = (args: { isSparePiece: boolean; piece: { pieceType: string }; square: string | null; }) => {
         // Show move options when dragging a piece
-        getMoveOptions(args.square);
+        if (args.square) {
+            getMoveOptions(args.square);
+        }
     };
 
     // Handle square right click
@@ -273,8 +275,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     };
 
     // Set the chessboard options
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const chessboardOptions: any = {
+    const chessboardOptions = {
         onPieceDrop,
         onSquareClick,
         onSquareRightClick,
