@@ -1,6 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Chessboard } from 'react-chessboard';
 import { Chess } from 'chess.js';
+import { Bots } from './bots';
+import type { Bot } from './bots';
+import { move as makeMove } from './engine';
 
 interface ChessGameProps {
     onGameEnd?: (result: string) => void;
@@ -17,36 +20,111 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     const [isThinking, setIsThinking] = useState(false);
     const [moveFrom, setMoveFrom] = useState('');
     const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
+    const [playerSide, setPlayerSide] = useState<'white' | 'black'>('white');
+    const [opponentLevel, setOpponentLevel] = useState<string>('Easy (Skill 1, Depth 10)');
+    const [playerBot, setPlayerBot] = useState<Bot | null>(null);
+    const [opponentBot, setOpponentBot] = useState<Bot | null>(null);
+    const [isResetting, setIsResetting] = useState(false);
 
     // Reset the game
     const resetGame = () => {
-        chessGameRef.current = new Chess();
-        setChessPosition(chessGameRef.current.fen());
-        setGameStatus('playing');
-        setCurrentPlayer('white');
-        setIsThinking(false);
-        setMoveFrom('');
-        setOptionSquares({});
+        setIsResetting(true);
+        setTimeout(() => {
+            chessGameRef.current = new Chess();
+            setChessPosition(chessGameRef.current.fen());
+            setGameStatus('playing');
+            setCurrentPlayer('white');
+            setIsThinking(false);
+            setMoveFrom('');
+            setOptionSquares({});
+            setIsResetting(false);
+        }, 500); // Small delay to show the resetting message
     };
 
-    // Make a random "CPU" move
-    const makeRandomMove = () => {
-        // Get all possible moves
-        const possibleMoves = chessGameRef.current.moves();
+    // Reset game when player side changes
+    useEffect(() => {
+        resetGame();
+    }, [playerSide]);
 
-        // Exit if the game is over
-        if (chessGameRef.current.isGameOver()) {
-            return;
+    // Initialize bots when opponentLevel changes
+    useEffect(() => {
+        setPlayerBot(Bots[`Beginner (Skill 0, Depth 5)`]()); // Player bot for hints
+        setOpponentBot(Bots[opponentLevel]());
+    }, [opponentLevel]);
+
+    // Make opponent move automatically when it's their turn
+    useEffect(() => {
+        const makeOpponentMove = async () => {
+            if (gameStatus !== 'playing') return;
+
+            const isWhiteTurn = chessGameRef.current.turn() === 'w';
+            const isOpponentTurn = (playerSide === 'white' && !isWhiteTurn) || (playerSide === 'black' && isWhiteTurn);
+
+            if (isOpponentTurn && opponentBot) {
+                setIsThinking(true);
+                // Add a delay before making the move to make it feel more natural
+                setTimeout(async () => {
+                    try {
+                        const move = await opponentBot.move(chessPosition);
+                        const result = makeMove(chessPosition, move.from, move.to);
+                        if (result) {
+                            const [newFen] = result;
+                            chessGameRef.current.load(newFen as string);
+                            setChessPosition(newFen as string);
+                            setCurrentPlayer(chessGameRef.current.turn() === 'w' ? 'white' : 'black');
+
+                            // Check game status
+                            if (chessGameRef.current.isGameOver()) {
+                                if (chessGameRef.current.isCheckmate()) {
+                                    setGameStatus('checkmate');
+                                    onGameEnd?.(`${chessGameRef.current.turn() === 'w' ? 'Black' : 'White'} wins by checkmate!`);
+                                } else if (chessGameRef.current.isDraw()) {
+                                    setGameStatus('draw');
+                                    onGameEnd?.('Game ended in a draw!');
+                                } else if (chessGameRef.current.isStalemate()) {
+                                    setGameStatus('stalemate');
+                                    onGameEnd?.('Game ended in a stalemate!');
+                                }
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error making opponent move:', error);
+                    } finally {
+                        setIsThinking(false);
+                    }
+                }, 1000); // 1 second delay
+            }
+        };
+
+        makeOpponentMove();
+    }, [chessPosition, opponentBot, playerSide, gameStatus, onGameEnd]);
+
+    // Get a hint from the AI
+    const getHint = async () => {
+        if (gameStatus !== 'playing') return;
+
+        const isWhiteTurn = chessGameRef.current.turn() === 'w';
+        const isPlayerTurn = (playerSide === 'white' && isWhiteTurn) || (playerSide === 'black' && !isWhiteTurn);
+
+        if (isPlayerTurn && playerBot) {
+            setIsThinking(true);
+            try {
+                const move = await playerBot.move(chessPosition);
+                // Highlight the suggested move
+                setOptionSquares({
+                    [move.from]: {
+                        background: 'rgba(255, 255, 0, 0.4)'
+                    },
+                    [move.to]: {
+                        background: 'rgba(255, 0, 0, 0.4)'
+                    }
+                });
+            } catch (error) {
+                console.error('Error getting hint:', error);
+            } finally {
+                setIsThinking(false);
+            }
         }
-
-        // Pick a random move
-        const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-
-        // Make the move
-        chessGameRef.current.move(randomMove);
-
-        // Update the position state
-        setChessPosition(chessGameRef.current.fen());
     };
 
     // Get the move options for a square to show valid moves
@@ -91,6 +169,14 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
 
     // Handle square click
     const onSquareClick = (args: { piece: { pieceType: string } | null; square: string; }) => {
+        // Check if it's player's turn
+        const isWhiteTurn = chessGameRef.current.turn() === 'w';
+        const isPlayerTurn = (playerSide === 'white' && isWhiteTurn) || (playerSide === 'black' && !isWhiteTurn);
+
+        if (!isPlayerTurn || gameStatus !== 'playing') {
+            return;
+        }
+
         // Piece clicked to move
         if (!moveFrom && args.piece) {
             // Get the move options for the square
@@ -160,27 +246,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                 setGameStatus('stalemate');
                 onGameEnd?.('Game ended in a stalemate!');
             }
-        } else {
-            // Make random cpu move after a short delay
-            setIsThinking(true);
-            setTimeout(() => {
-                makeRandomMove();
-                setIsThinking(false);
-
-                // Check game status after AI move
-                if (chessGameRef.current.isGameOver()) {
-                    if (chessGameRef.current.isCheckmate()) {
-                        setGameStatus('checkmate');
-                        onGameEnd?.(`${chessGameRef.current.turn() === 'w' ? 'Black' : 'White'} wins by checkmate!`);
-                    } else if (chessGameRef.current.isDraw()) {
-                        setGameStatus('draw');
-                        onGameEnd?.('Game ended in a draw!');
-                    } else if (chessGameRef.current.isStalemate()) {
-                        setGameStatus('stalemate');
-                        onGameEnd?.('Game ended in a stalemate!');
-                    }
-                }
-            }, 500);
         }
 
         // Clear moveFrom and optionSquares
@@ -195,18 +260,24 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
             return false;
         }
 
+        // Check if it's player's turn
+        const isWhiteTurn = chessGameRef.current.turn() === 'w';
+        const isPlayerTurn = (playerSide === 'white' && isWhiteTurn) || (playerSide === 'black' && !isWhiteTurn);
+
+        if (!isPlayerTurn || gameStatus !== 'playing') {
+            return false;
+        }
+
         // Try to make the move according to chess.js logic
         try {
-            const move = chessGameRef.current.move({
-                from: args.sourceSquare,
-                to: args.targetSquare,
-                promotion: 'q' // Always promote to a queen for simplicity
-            });
+            const result = makeMove(chessPosition, args.sourceSquare, args.targetSquare);
 
             // If move was successful
-            if (move) {
+            if (result) {
+                const [newFen] = result;
+                chessGameRef.current.load(newFen as string);
                 // Update the position state upon successful move to trigger a re-render of the chessboard
-                setChessPosition(chessGameRef.current.fen());
+                setChessPosition(newFen as string);
                 setCurrentPlayer(chessGameRef.current.turn() === 'w' ? 'white' : 'black');
 
                 // Check game status
@@ -221,27 +292,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                         setGameStatus('stalemate');
                         onGameEnd?.('Game ended in a stalemate!');
                     }
-                } else {
-                    // Make AI move after a short delay
-                    setIsThinking(true);
-                    setTimeout(() => {
-                        makeRandomMove();
-                        setIsThinking(false);
-
-                        // Check game status after AI move
-                        if (chessGameRef.current.isGameOver()) {
-                            if (chessGameRef.current.isCheckmate()) {
-                                setGameStatus('checkmate');
-                                onGameEnd?.(`${chessGameRef.current.turn() === 'w' ? 'Black' : 'White'} wins by checkmate!`);
-                            } else if (chessGameRef.current.isDraw()) {
-                                setGameStatus('draw');
-                                onGameEnd?.('Game ended in a draw!');
-                            } else if (chessGameRef.current.isStalemate()) {
-                                setGameStatus('stalemate');
-                                onGameEnd?.('Game ended in a stalemate!');
-                            }
-                        }
-                    }, 500);
                 }
 
                 // Clear moveFrom and optionSquares
@@ -261,6 +311,14 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
 
     // Handle the piece drag
     const onPieceDragBegin = (args: { isSparePiece: boolean; piece: { pieceType: string }; square: string | null; }) => {
+        // Check if it's player's turn
+        const isWhiteTurn = chessGameRef.current.turn() === 'w';
+        const isPlayerTurn = (playerSide === 'white' && isWhiteTurn) || (playerSide === 'black' && !isWhiteTurn);
+
+        if (!isPlayerTurn || gameStatus !== 'playing') {
+            return;
+        }
+
         // Show move options when dragging a piece
         if (args.square) {
             getMoveOptions(args.square);
@@ -287,46 +345,105 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
         customBoardStyle: {
             borderRadius: '4px',
             boxShadow: '0 5px 15px rgba(0, 0, 0, 0.5)'
-        }
+        },
+        // Flip the board based on player's side
+        arePiecesDraggable: true,
+        boardOrientation: playerSide as 'white' | 'black'
     };
 
     return (
-        <div className="flex flex-col items-center">
-            <div className="mb-4 text-center">
-                <h2 className="text-2xl font-bold mb-2">Chess Game</h2>
-                <div className="flex items-center justify-center gap-4">
-                    <div className={`px-4 py-2 rounded-lg ${currentPlayer === 'white' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                        White's Turn
+        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-3 sm:p-4 md:p-6 min-h-screen justify-center">
+            <div className="text-center w-full mb-4 sm:mb-6 md:mb-8">
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                    Chess Coach
+                </h2>
+
+                {isResetting ? (
+                    <div className="text-xl md:text-2xl font-semibold text-blue-600 mb-6 md:mb-8 py-3 md:py-4 animate-pulse">
+                        Resetting game...
                     </div>
-                    <div className={`px-4 py-2 rounded-lg ${currentPlayer === 'black' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}>
-                        Black's Turn
-                    </div>
+                ) : (
+                    <>
+                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8">
+                            <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3 bg-white/80 backdrop-blur-sm p-3 md:p-4 rounded-xl md:rounded-2xl shadow-lg border border-gray-200 w-full sm:w-auto">
+                                <label className="font-semibold text-gray-700 text-base md:text-lg min-w-[100px] md:min-w-[120px]">Player Side:</label>
+                                <select
+                                    value={playerSide}
+                                    onChange={(e) => setPlayerSide(e.target.value as 'white' | 'black')}
+                                    className="border-2 border-gray-300 rounded-xl px-3 py-2 md:px-4 md:py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg font-medium w-full sm:w-auto"
+                                >
+                                    <option value="white">White</option>
+                                    <option value="black">Black</option>
+                                </select>
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 w-full md:w-auto">
+                                <label className="font-semibold text-gray-700 text-base md:text-lg min-w-[100px] md:min-w-[120px]">AI Level:</label>
+                                <select
+                                    value={opponentLevel}
+                                    onChange={(e) => setOpponentLevel(e.target.value)}
+                                    className="border-2 border-gray-300 rounded-xl px-3 py-2 md:px-4 md:py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg font-medium w-full sm:w-auto min-w-[160px] md:min-w-[200px]"
+                                >
+                                    {Object.keys(Bots).map((levelName) => (
+                                        <option key={levelName} value={levelName}>
+                                            {levelName.replace('Stockfish Lite (Skill ', 'Level ').replace(', Depth ', ' - Depth ')}
+                                        </option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
+                            <div className={`px-4 py-2 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-base md:text-xl shadow-lg transition-all duration-300 ${currentPlayer === 'white'
+                                ? 'bg-blue-500 text-white scale-105 ring-2 md:ring-4 ring-blue-200'
+                                : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                White's Turn
+                            </div>
+                            <div className={`px-4 py-2 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-base md:text-xl shadow-lg transition-all duration-300 ${currentPlayer === 'black'
+                                ? 'bg-blue-500 text-white scale-105 ring-2 md:ring-4 ring-blue-200'
+                                : 'bg-gray-100 text-gray-600'
+                                }`}>
+                                Black's Turn
+                            </div>
+
+                            <button
+                                onClick={getHint}
+                                disabled={isThinking || gameStatus !== 'playing'}
+                                className="px-4 py-2 md:px-8 md:py-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-xl md:rounded-2xl hover:from-yellow-500 hover:to-orange-500 transition-all duration-300 font-bold text-base md:text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 ring-2 ring-yellow-200 hover:ring-orange-300 min-w-[120px] md:min-w-[180px]"
+                            >
+                                Get Hint
+                            </button>
+                        </div>
+                    </>
+                )}
+                <div className="h-12 md:h-16 flex items-center justify-center min-h-[3rem] md:min-h-[4rem]">
                     {isThinking && (
-                        <div className="mt-2 text-lg font-semibold text-blue-600">
+                        <div className="text-lg md:text-xl font-semibold text-blue-600 bg-blue-50 p-2 md:p-3 rounded-lg inline-block mx-auto shadow-md animate-pulse">
                             AI is thinking...
                         </div>
                     )}
                     {gameStatus !== 'playing' && (
-                        <div className="mt-2 text-lg font-semibold text-green-600">
+                        <div className="text-lg md:text-xl font-semibold text-green-700 bg-green-100 p-3 md:p-4 rounded-lg inline-block mx-auto shadow-md">
                             {gameStatus === 'checkmate' && 'Checkmate!'}
                             {gameStatus === 'draw' && 'Draw!'}
                             {gameStatus === 'stalemate' && 'Stalemate!'}
                         </div>
                     )}
                 </div>
+            </div>
 
-                <div className="border-4 border-gray-800 rounded-lg p-2">
-                    <Chessboard options={chessboardOptions} />
-                </div>
+            <div className="w-full max-w-xs sm:max-w-lg md:max-w-2xl border-4 border-gray-800 rounded-xl p-2 sm:p-3 md:p-4 bg-gradient-to-br from-amber-50 to-amber-100 shadow-xl">
+                <Chessboard options={chessboardOptions} />
+            </div>
 
-                <div className="mt-4">
-                    <button
-                        onClick={resetGame}
-                        className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors font-semibold"
-                    >
-                        New Game
-                    </button>
-                </div>
+            <div className="mt-8 md:mt-10">
+                <button
+                    onClick={resetGame}
+                    className="px-6 py-3 md:px-10 md:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl md:rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-bold text-lg md:text-xl shadow-lg transform hover:scale-105 active:scale-95 ring-2 ring-blue-200 hover:ring-blue-300 min-w-[160px] md:min-w-[250px]"
+                >
+                    New Game
+                </button>
             </div>
         </div>
     );
