@@ -1255,11 +1255,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                     </>
                 )}
                 <div className="status-container">
-                    {isThinking && (
-                        <div className="thinking-message">
-                            AI is thinking...
-                        </div>
-                    )}
                     {moveComment && (
                         <div className="coach-container">
                             <div className="coach-image">
