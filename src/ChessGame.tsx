@@ -4,6 +4,7 @@ import { Chess } from 'chess.js';
 import { Bots } from './bots';
 import type { Bot } from './bots';
 import { move as makeMove } from './engine';
+import './ChessGame.css';
 
 interface ChessGameProps {
     onGameEnd?: (result: string) => void;
@@ -352,37 +353,37 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full max-w-4xl mx-auto p-3 sm:p-4 md:p-6 min-h-screen justify-center">
-            <div className="text-center w-full mb-4 sm:mb-6 md:mb-8">
-                <h2 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8 text-gray-800 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+        <div className="chess-game-container">
+            <div className="chess-game-header">
+                <h2 className="chess-game-title">
                     Chess Coach
                 </h2>
 
                 {isResetting ? (
-                    <div className="text-xl md:text-2xl font-semibold text-blue-600 mb-6 md:mb-8 py-3 md:py-4 animate-pulse">
+                    <div className="resetting-message">
                         Resetting game...
                     </div>
                 ) : (
                     <>
-                        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8">
-                            <div className="flex flex-col sm:flex-row items-center gap-2 md:gap-3 bg-white/80 backdrop-blur-sm p-3 md:p-4 rounded-xl md:rounded-2xl shadow-lg border border-gray-200 w-full sm:w-auto">
-                                <label className="font-semibold text-gray-700 text-base md:text-lg min-w-[100px] md:min-w-[120px]">Player Side:</label>
+                        <div className="settings-container">
+                            <div className="setting-group">
+                                <label className="setting-label">Player:</label>
                                 <select
                                     value={playerSide}
                                     onChange={(e) => setPlayerSide(e.target.value as 'white' | 'black')}
-                                    className="border-2 border-gray-300 rounded-xl px-3 py-2 md:px-4 md:py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg font-medium w-full sm:w-auto"
+                                    className="setting-select"
                                 >
                                     <option value="white">White</option>
                                     <option value="black">Black</option>
                                 </select>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/80 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 w-full md:w-auto">
-                                <label className="font-semibold text-gray-700 text-base md:text-lg min-w-[100px] md:min-w-[120px]">AI Level:</label>
+                            <div className="setting-group">
+                                <label className="setting-label">AI Level:</label>
                                 <select
                                     value={opponentLevel}
                                     onChange={(e) => setOpponentLevel(e.target.value)}
-                                    className="border-2 border-gray-300 rounded-xl px-3 py-2 md:px-4 md:py-3 bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-base md:text-lg font-medium w-full sm:w-auto min-w-[160px] md:min-w-[200px]"
+                                    className="setting-select"
                                 >
                                     {Object.keys(Bots).map((levelName) => (
                                         <option key={levelName} value={levelName}>
@@ -393,38 +394,32 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                             </div>
                         </div>
 
-                        <div className="flex flex-wrap items-center justify-center gap-4 mb-8">
-                            <div className={`px-4 py-2 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-base md:text-xl shadow-lg transition-all duration-300 ${currentPlayer === 'white'
-                                ? 'bg-blue-500 text-white scale-105 ring-2 md:ring-4 ring-blue-200'
-                                : 'bg-gray-100 text-gray-600'
-                                }`}>
+                        <div className="turn-indicators">
+                            <div className={`turn-indicator ${currentPlayer === 'white' ? 'active' : 'inactive'}`}>
                                 White's Turn
                             </div>
-                            <div className={`px-4 py-2 md:px-8 md:py-4 rounded-xl md:rounded-2xl font-semibold text-base md:text-xl shadow-lg transition-all duration-300 ${currentPlayer === 'black'
-                                ? 'bg-blue-500 text-white scale-105 ring-2 md:ring-4 ring-blue-200'
-                                : 'bg-gray-100 text-gray-600'
-                                }`}>
+                            <div className={`turn-indicator ${currentPlayer === 'black' ? 'active' : 'inactive'}`}>
                                 Black's Turn
                             </div>
 
                             <button
                                 onClick={getHint}
                                 disabled={isThinking || gameStatus !== 'playing'}
-                                className="px-4 py-2 md:px-8 md:py-4 bg-gradient-to-r from-yellow-400 to-orange-400 text-white rounded-xl md:rounded-2xl hover:from-yellow-500 hover:to-orange-500 transition-all duration-300 font-bold text-base md:text-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105 active:scale-95 ring-2 ring-yellow-200 hover:ring-orange-300 min-w-[120px] md:min-w-[180px]"
+                                className="hint-button"
                             >
                                 Get Hint
                             </button>
                         </div>
                     </>
                 )}
-                <div className="h-12 md:h-16 flex items-center justify-center min-h-[3rem] md:min-h-[4rem]">
+                <div className="status-container">
                     {isThinking && (
-                        <div className="text-lg md:text-xl font-semibold text-blue-600 bg-blue-50 p-2 md:p-3 rounded-lg inline-block mx-auto shadow-md animate-pulse">
+                        <div className="thinking-message">
                             AI is thinking...
                         </div>
                     )}
                     {gameStatus !== 'playing' && (
-                        <div className="text-lg md:text-xl font-semibold text-green-700 bg-green-100 p-3 md:p-4 rounded-lg inline-block mx-auto shadow-md">
+                        <div className="game-status-message">
                             {gameStatus === 'checkmate' && 'Checkmate!'}
                             {gameStatus === 'draw' && 'Draw!'}
                             {gameStatus === 'stalemate' && 'Stalemate!'}
@@ -433,14 +428,14 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                 </div>
             </div>
 
-            <div className="w-full max-w-xs sm:max-w-lg md:max-w-2xl border-4 border-gray-800 rounded-xl p-2 sm:p-3 md:p-4 bg-gradient-to-br from-amber-50 to-amber-100 shadow-xl">
+            <div className="chessboard-container">
                 <Chessboard options={chessboardOptions} />
             </div>
 
-            <div className="mt-8 md:mt-10">
+            <div className="new-game-button-container">
                 <button
                     onClick={resetGame}
-                    className="px-6 py-3 md:px-10 md:py-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl md:rounded-2xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 font-bold text-lg md:text-xl shadow-lg transform hover:scale-105 active:scale-95 ring-2 ring-blue-200 hover:ring-blue-300 min-w-[160px] md:min-w-[250px]"
+                    className="new-game-button"
                 >
                     New Game
                 </button>

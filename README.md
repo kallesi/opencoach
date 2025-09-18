@@ -2,6 +2,8 @@
 
 OpenCoach is a chess coach application designed to **teach while playing**. Unlike traditional chess engines, it operates as a **stateful, context-aware tutor** that reacts to board positions using a **template-driven feedback system**. The coach provides real-time guidance, helping players learn and improve through interactive gameplay.
 
+![Chess Coach Interface](src/assets/chess-coach.png)
+
 ## 🎯 Core Design Principles
 
 ### Preset Sentence Templates
