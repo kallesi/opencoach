@@ -1,5 +1,6 @@
 import React from 'react';
 import { Bots } from './bots';
+import './OptionsPopup.css';
 
 interface OptionsPopupProps {
     playerSide: 'white' | 'black';

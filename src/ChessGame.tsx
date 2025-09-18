@@ -18,7 +18,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
 
     const [chessPosition, setChessPosition] = useState(chessGameRef.current.fen());
     const [gameStatus, setGameStatus] = useState<'playing' | 'checkmate' | 'draw' | 'stalemate'>('playing');
-    const [currentPlayer, setCurrentPlayer] = useState<'white' | 'black'>('white');
     const [isThinking, setIsThinking] = useState(false);
     const [moveFrom, setMoveFrom] = useState('');
     const [optionSquares, setOptionSquares] = useState<Record<string, React.CSSProperties>>({});
@@ -833,7 +832,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
             chessGameRef.current = new Chess();
             setChessPosition(chessGameRef.current.fen());
             setGameStatus('playing');
-            setCurrentPlayer('white');
             setIsThinking(false);
             setMoveFrom('');
             setOptionSquares({});
@@ -872,7 +870,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                             const [newFen] = result;
                             chessGameRef.current.load(newFen as string);
                             setChessPosition(newFen as string);
-                            setCurrentPlayer(chessGameRef.current.turn() === 'w' ? 'white' : 'black');
 
                             // Track AI move and generate comment
                             if (piece) {
@@ -1066,7 +1063,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
 
         // Update the position state
         setChessPosition(chessGameRef.current.fen());
-        setCurrentPlayer(chessGameRef.current.turn() === 'w' ? 'white' : 'black');
 
         // Check game status
         if (chessGameRef.current.isGameOver()) {
@@ -1113,7 +1109,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                 chessGameRef.current.load(newFen as string);
                 // Update the position state upon successful move to trigger a re-render of the chessboard
                 setChessPosition(newFen as string);
-                setCurrentPlayer(chessGameRef.current.turn() === 'w' ? 'white' : 'black');
 
                 // Track player move and generate comment
                 if (piece) {
@@ -1199,9 +1194,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     return (
         <div className="chess-game-container">
             <div className="chess-game-header">
-                <h2 className="chess-game-title">
-                    Chess Coach
-                </h2>
 
                 {isResetting ? (
                     <div className="resetting-message">
@@ -1216,45 +1208,43 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                             <button
                                 onClick={resetGame}
                                 className="new-game-button"
+                                aria-label="New Game"
+                                title="New Game"
                             >
-                                New Game
+                                ♻️
                             </button>
-                            <div className={`turn-indicator ${currentPlayer === 'white' ? 'active' : 'inactive'}`}>
-                                White's Turn
-                            </div>
-                            <div className={`turn-indicator ${currentPlayer === 'black' ? 'active' : 'inactive'}`}>
-                                Black's Turn
-                            </div>
 
                             <button
                                 onClick={getHint}
                                 disabled={isThinking || gameStatus !== 'playing'}
                                 className="hint-button"
+                                aria-label="Get Hint"
+                                title="Get Hint"
                             >
-                                Get Hint
+                                💡
                             </button>
                             <button
                                 onClick={() => setShowOptions(true)}
                                 className="options-button"
+                                aria-label="Options"
+                                title="Options"
                             >
-                                Options
+                                ⚙️
                             </button>
                         </div>
                     </>
                 )}
                 <div className="status-container">
-                    {moveComment && (
-                        <div className="coach-container">
-                            <div className="coach-image">
-                                <div className="coach-icon">👨‍🏫</div>
-                            </div>
-                            <div className="coach-comment">
-                                <div className="move-comment">
-                                    {moveComment}
-                                </div>
+                    <div className={`coach-container ${moveComment ? 'has-comment' : 'no-comment'}`}>
+                        <div className="coach-image">
+                            <div className="coach-icon">👨‍🏫</div>
+                        </div>
+                        <div className="coach-comment">
+                            <div className="move-comment">
+                                {moveComment || "Waiting for a move..."}
                             </div>
                         </div>
-                    )}
+                    </div>
                     {gameStatus !== 'playing' && (
                         <div className="game-status-message">
                             {gameStatus === 'checkmate' && 'Checkmate!'}

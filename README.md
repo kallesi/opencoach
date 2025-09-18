@@ -81,7 +81,6 @@ Rather than spoon-feeding moves, the coach:
 
 ### Core Technologies
 - **Frontend**: React with TypeScript and Vite
-- **UI Library**: TailwindCSS for styling
 - **Chess Logic**: chess.js for game state management
 - **Chess UI**: react-chessground (React wrapper for lichess chessground)
 - **AI Engine**: Stockfish WASM (WebAssembly) for move evaluation and hints
@@ -148,4 +147,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - chess.js for chess logic implementation
 - lichess chessground for the chessboard UI
 - Stockfish for the chess engine
-- TailwindCSS for styling
