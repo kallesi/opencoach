@@ -3,10 +3,12 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
+    max-width: 100%;
     margin: 0 auto;
     padding: 0.5rem;
     min-height: 100vh;
     justify-content: center;
+    overflow-x: hidden;
 }
 
 .chess-game-header {
@@ -237,11 +239,14 @@
 }
 
 .status-container {
-    height: 2.5rem;
+    height: auto;
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 2.5rem;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
 }
 
 @media (min-width: 640px) {
@@ -253,6 +258,84 @@
 @media (min-width: 768px) {
     .status-container {
         height: 3.5rem;
+    }
+}
+
+.move-comment {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f2937;
+    background-color: #f3f4f6;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: inline-block;
+    margin: 0 auto 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 100%;
+    width: 100%;
+    text-align: center;
+    position: relative;
+    border: 2px solid #4f46e5;
+    /* Speech bubble arrow */
+    margin-top: 20px;
+    box-sizing: border-box;
+}
+
+.move-comment:before {
+    content: "";
+    position: absolute;
+    top: -10px;
+    left: 20px;
+    border-width: 0 10px 10px 10px;
+    border-style: solid;
+    border-color: transparent transparent #4f46e5 transparent;
+}
+
+.coach-container {
+    display: flex;
+    align-items: flex-start;
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 1rem;
+    box-sizing: border-box;
+}
+
+.coach-image {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: #4f46e5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.coach-image img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.coach-icon {
+    font-size: 2rem;
+    color: white;
+}
+
+.coach-comment {
+    flex: 1;
+    min-width: 0;
+    max-width: 100%;
+}
+
+@media (min-width: 640px) {
+    .move-comment {
+        font-size: 1.125rem;
+        margin-bottom: 0.75rem;
     }
 }
 
