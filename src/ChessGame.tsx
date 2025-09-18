@@ -4,6 +4,7 @@ import { Chess } from 'chess.js';
 import { Bots } from './bots';
 import type { Bot } from './bots';
 import { move as makeMove } from './engine';
+import OptionsPopup from './OptionsPopup';
 import './ChessGame.css';
 
 interface ChessGameProps {
@@ -26,6 +27,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     const [playerBot, setPlayerBot] = useState<Bot | null>(null);
     const [opponentBot, setOpponentBot] = useState<Bot | null>(null);
     const [isResetting, setIsResetting] = useState(false);
+    const [showOptions, setShowOptions] = useState(false);
     const [moveComment, setMoveComment] = useState('');
 
     // Position analysis functions
@@ -1208,32 +1210,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                 ) : (
                     <>
                         <div className="settings-container">
-                            <div className="setting-group">
-                                <label className="setting-label">Player:</label>
-                                <select
-                                    value={playerSide}
-                                    onChange={(e) => setPlayerSide(e.target.value as 'white' | 'black')}
-                                    className="setting-select"
-                                >
-                                    <option value="white">White</option>
-                                    <option value="black">Black</option>
-                                </select>
-                            </div>
-
-                            <div className="setting-group">
-                                <label className="setting-label">AI Level:</label>
-                                <select
-                                    value={opponentLevel}
-                                    onChange={(e) => setOpponentLevel(e.target.value)}
-                                    className="setting-select"
-                                >
-                                    {Object.keys(Bots).map((levelName) => (
-                                        <option key={levelName} value={levelName}>
-                                            {levelName.replace('Stockfish Lite (Skill ', 'Level ').replace(', Depth ', ' - Depth ')}
-                                        </option>
-                                    ))}
-                                </select>
-                            </div>
                         </div>
 
                         <div className="turn-indicators">
@@ -1256,6 +1232,12 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                                 className="hint-button"
                             >
                                 Get Hint
+                            </button>
+                            <button
+                                onClick={() => setShowOptions(true)}
+                                className="options-button"
+                            >
+                                Options
                             </button>
                         </div>
                     </>
@@ -1286,6 +1268,15 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
             <div className="chessboard-container">
                 <Chessboard options={chessboardOptions} />
             </div>
+            {showOptions && (
+                <OptionsPopup
+                    playerSide={playerSide}
+                    setPlayerSide={setPlayerSide}
+                    opponentLevel={opponentLevel}
+                    setOpponentLevel={setOpponentLevel}
+                    onClose={() => setShowOptions(false)}
+                />
+            )}
 
         </div>
     );
