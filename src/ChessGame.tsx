@@ -1237,6 +1237,12 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                         </div>
 
                         <div className="turn-indicators">
+                            <button
+                                onClick={resetGame}
+                                className="new-game-button"
+                            >
+                                New Game
+                            </button>
                             <div className={`turn-indicator ${currentPlayer === 'white' ? 'active' : 'inactive'}`}>
                                 White's Turn
                             </div>
@@ -1281,14 +1287,6 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
                 <Chessboard options={chessboardOptions} />
             </div>
 
-            <div className="new-game-button-container">
-                <button
-                    onClick={resetGame}
-                    className="new-game-button"
-                >
-                    New Game
-                </button>
-            </div>
         </div>
     );
 }
