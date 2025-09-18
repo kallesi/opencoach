@@ -8,9 +8,7 @@ function App() {
 
     return (
         <div className="app-container">
-            <div className="app-content">
-                <ChessGame onGameEnd={handleGameEnd} />
-            </div>
+            <ChessGame onGameEnd={handleGameEnd} />
         </div>
     )
 }

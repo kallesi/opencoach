@@ -1,13 +1,19 @@
 /* Enhanced responsive CSS for App */
 .app-container {
     min-height: 100vh;
-    background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+    background: #ffffff;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 1.5rem;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    max-width: 700px;
+    margin: 0 auto;
+    background: rgba(245, 245, 245, 0.95);
+    border-radius: 1rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
 }
 
 .app-content,
@@ -19,8 +25,8 @@
 }
 
 .logo {
-    height: 4.5em;
-    margin: 1.2em auto;
+    height: 3.5em;
+    margin: 0.8em auto;
     display: block;
     filter: drop-shadow(0 10px rgba(255, 255, 255, 0.5));
     transition: transform 0.3s ease;
@@ -31,53 +37,53 @@
 }
 
 .card {
-    padding: 1.5em;
-    margin: 1.2em auto;
-    border-radius: 1rem;
-    background: rgba(255, 255, 255, 0.85);
+    padding: 1em;
+    margin: 0.8em auto;
+    border-radius: 0.75rem;
+    background: rgba(245, 245, 245, 0.95);
     backdrop-filter: blur(10px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(220, 220, 220, 0.18);
 }
 
 .read-the-docs {
-    color: #ffffff;
+    color: #666666;
     opacity: 0.9;
 }
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
     .app-container {
-        padding: 1rem;
+        padding: 0.75rem;
     }
 
     .logo {
-        height: 3.5em;
+        height: 3em;
     }
 
     .card {
-        padding: 1.2em;
-        margin: 1em auto;
+        padding: 1em;
+        margin: 0.75em auto;
     }
 }
 
 @media (max-width: 480px) {
     .app-container {
-        padding: 0.75rem;
+        padding: 0.5rem;
     }
 
     .logo {
-        height: 2.8em;
-        margin: 1em auto;
+        height: 2.5em;
+        margin: 0.75em auto;
     }
 
     .card {
-        padding: 1em;
-        margin: 0.8em auto;
-        border-radius: 0.75rem;
+        padding: 0.75em;
+        margin: 0.5em auto;
+        border-radius: 0.5rem;
     }
 
     .read-the-docs {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 }

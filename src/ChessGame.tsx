@@ -828,6 +828,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     // Reset the game
     const resetGame = () => {
         setIsResetting(true);
+        setMoveComment('Resetting game...');
         setTimeout(() => {
             chessGameRef.current = new Chess();
             setChessPosition(chessGameRef.current.fen());
@@ -836,6 +837,7 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
             setMoveFrom('');
             setOptionSquares({});
             setIsResetting(false);
+            setMoveComment(''); // Clear the move comment after reset
         }, 500); // Small delay to show the resetting message
     };
 
@@ -1192,48 +1194,41 @@ const ChessGame: React.FC<ChessGameProps> = ({ onGameEnd }) => {
     };
 
     return (
-        <div className="chess-game-container">
+        <div className="chess-game">
             <div className="chess-game-header">
+                <div className="settings-container">
+                </div>
 
-                {isResetting ? (
-                    <div className="resetting-message">
-                        Resetting game...
-                    </div>
-                ) : (
-                    <>
-                        <div className="settings-container">
-                        </div>
+                <div className="turn-indicators">
+                    <button
+                        onClick={resetGame}
+                        disabled={isResetting}
+                        className="new-game-button"
+                        aria-label="New Game"
+                        title="New Game"
+                    >
+                        {isResetting ? '🔄' : '♻️'}
+                    </button>
 
-                        <div className="turn-indicators">
-                            <button
-                                onClick={resetGame}
-                                className="new-game-button"
-                                aria-label="New Game"
-                                title="New Game"
-                            >
-                                ♻️
-                            </button>
-
-                            <button
-                                onClick={getHint}
-                                disabled={isThinking || gameStatus !== 'playing'}
-                                className="hint-button"
-                                aria-label="Get Hint"
-                                title="Get Hint"
-                            >
-                                💡
-                            </button>
-                            <button
-                                onClick={() => setShowOptions(true)}
-                                className="options-button"
-                                aria-label="Options"
-                                title="Options"
-                            >
-                                ⚙️
-                            </button>
-                        </div>
-                    </>
-                )}
+                    <button
+                        onClick={getHint}
+                        disabled={isThinking || gameStatus !== 'playing' || isResetting}
+                        className="hint-button"
+                        aria-label="Get Hint"
+                        title="Get Hint"
+                    >
+                        💡
+                    </button>
+                    <button
+                        onClick={() => setShowOptions(true)}
+                        disabled={isResetting}
+                        className="options-button"
+                        aria-label="Options"
+                        title="Options"
+                    >
+                        ⚙️
+                    </button>
+                </div>
                 <div className="status-container">
                     <div className={`coach-container ${moveComment ? 'has-comment' : 'no-comment'}`}>
                         <div className="coach-image">

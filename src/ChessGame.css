@@ -1,21 +1,21 @@
 /* Enhanced responsive CSS for ChessGame */
 .chess-game-container {
-    max-width: 800px;
+    max-width: 700px;
     margin: 0 auto;
-    padding: 1.5rem;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 1.25rem;
+    padding: 1rem;
+    background: rgba(245, 245, 245, 0.95);
+    border-radius: 1rem;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     backdrop-filter: blur(10px);
 }
 
 .chess-game-header {
     text-align: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1rem;
 }
 
 .chess-game-title {
-    font-size: 2rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: #1e293b;
     margin-bottom: 0.5rem;
@@ -31,11 +31,11 @@
 
 .chessboard-container {
     width: 100%;
-    max-width: 90vw;
-    margin: 0 auto 1.5rem;
+    max-width: 85vw;
+    margin: 0 auto 1rem;
     aspect-ratio: 1/1;
     background: linear-gradient(135deg, #f0f4f8, #e2e8f0);
-    border-radius: 0.75rem;
+    border-radius: 0.5rem;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     position: relative;
@@ -45,23 +45,23 @@
 .new-game-button,
 .hint-button,
 .options-button {
-    padding: 0.75em 1.5em;
-    border-radius: 0.75em;
+    padding: 0.5em 1em;
+    border-radius: 0.5em;
     border: none;
     color: #fff;
     background: linear-gradient(135deg, #6366f1, #4f46e5);
-    margin: 0.3em;
+    margin: 0.2em;
     font-weight: 600;
     cursor: pointer;
     box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
     transition: all 0.2s ease;
-    font-size: 1rem;
+    font-size: 0.9rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    min-width: 44px;
+    min-width: 36px;
     /* Minimum touch target size */
-    min-height: 44px;
+    min-height: 36px;
     /* Minimum touch target size */
 }
 
@@ -78,15 +78,15 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
-    margin: 1.5rem auto;
-    padding: 1.25rem;
+    gap: 0.75rem;
+    margin: 1rem auto;
+    padding: 1rem;
     background: linear-gradient(135deg, #fffbeb, #fef3c7);
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-    max-width: 600px;
+    max-width: 500px;
     border: 1px solid #fde68a;
-    min-height: 120px;
+    min-height: 80px;
     /* Ensure consistent height */
 }
 
@@ -124,13 +124,13 @@
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 1rem;
-    margin: 1.5rem 0;
+    gap: 0.5rem;
+    margin: 1rem 0;
 }
 
 /* Coach comment styling */
 .coach-icon {
-    font-size: 2rem;
+    font-size: 1.5rem;
 }
 
 .coach-comment {
@@ -140,9 +140,9 @@
 
 .move-comment {
     margin: 0;
-    font-size: 1rem;
+    font-size: 0.9rem;
     color: #555;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 /* Game status message */
@@ -169,69 +169,27 @@
 /* Responsive adjustments */
 @media (min-width: 768px) {
     .chess-game-container {
-        padding: 2.5rem;
-    }
-
-    .chessboard-container {
-        max-width: 500px;
-    }
-
-    .chess-game-title {
-        font-size: 2.5rem;
-    }
-
-    .coach-container {
         padding: 1.5rem;
     }
 
+    .chessboard-container {
+        max-width: 450px;
+    }
+
+    .chess-game-title {
+        font-size: 2rem;
+    }
+
+    .coach-container {
+        padding: 1rem;
+    }
+
     .move-comment {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
 }
 
 @media (max-width: 767px) {
-    .chess-game-container {
-        padding: 1.25rem;
-    }
-
-    .chess-game-title {
-        font-size: 1.75rem;
-    }
-
-    .turn-indicators {
-        gap: 0.5rem;
-        margin: 1rem 0;
-    }
-
-    .turn-indicator {
-        padding: 0.4em 1em;
-        font-size: 0.9rem;
-    }
-
-    .coach-container {
-        flex-direction: column;
-        text-align: center;
-        padding: 1rem;
-    }
-
-    .coach-comment {
-        text-align: center;
-    }
-
-    .move-comment {
-        font-size: 0.95rem;
-    }
-
-    .new-game-button,
-    .hint-button,
-    .options-button {
-        padding: 0.6em 1.2em;
-        font-size: 0.9rem;
-        margin: 0.2em;
-    }
-}
-
-@media (max-width: 480px) {
     .chess-game-container {
         padding: 1rem;
     }
@@ -241,9 +199,51 @@
     }
 
     .turn-indicators {
+        gap: 0.4rem;
+        margin: 0.75rem 0;
+    }
+
+    .turn-indicator {
+        padding: 0.3em 0.8em;
+        font-size: 0.8rem;
+    }
+
+    .coach-container {
+        flex-direction: column;
+        text-align: center;
+        padding: 0.75rem;
+    }
+
+    .coach-comment {
+        text-align: center;
+    }
+
+    .move-comment {
+        font-size: 0.85rem;
+    }
+
+    .new-game-button,
+    .hint-button,
+    .options-button {
+        padding: 0.5em 1em;
+        font-size: 0.8rem;
+        margin: 0.15em;
+    }
+}
+
+@media (max-width: 480px) {
+    .chess-game-container {
+        padding: 0.75rem;
+    }
+
+    .chess-game-title {
+        font-size: 1.25rem;
+    }
+
+    .turn-indicators {
         flex-direction: row;
         /* Keep buttons horizontal on mobile */
-        gap: 0.5rem;
+        gap: 0.4rem;
     }
 
     .turn-indicator {
@@ -251,11 +251,11 @@
     }
 
     .coach-container {
-        padding: 0.8rem;
+        padding: 0.6rem;
     }
 
     .move-comment {
-        font-size: 0.9rem;
+        font-size: 0.8rem;
     }
 
     .new-game-button,
@@ -263,6 +263,8 @@
     .options-button {
         width: auto;
         /* Keep buttons auto width on mobile */
-        margin: 0.3em;
+        margin: 0.2em;
+        padding: 0.4em 0.8em;
+        font-size: 0.75rem;
     }
 }
